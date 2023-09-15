@@ -13,13 +13,8 @@ public class App {
         Matriz matriz = Matriz.getInstance(dimensao, dimensao);
         matriz.receberMatriz(scanner);
 
-        int linhaPivo = matriz.encontrarPivoNaColuna(0);
-        if(linhaPivo != -1) // encontrei algum pivo na coluna
-            matriz.trocarLinhas(linhaPivo, 0);
-        else{
-            matriz.forcarPivo(0, 0);
-            linhaPivo = 0;
+        for (int i = 0; i < dimensao; i++) {
+            matriz.escalonarMatriz(i);
         }
-        matriz.zerarLinhasAbaixo(linhaPivo, 0);
     }
 }

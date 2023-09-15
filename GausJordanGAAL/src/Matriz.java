@@ -2,26 +2,26 @@ import java.util.Scanner;
 
 public class Matriz {
     private int column;
-    private int line;
+    private int row;
     private float[][] matrix;
-    private float determinant;
+    // private float determinant;
 
-    private Matriz(int column, int line){
+    private Matriz(int column, int row){
         this.column = column;
-        this.line = line;
-        this.matrix = new float[this.line][this.column];
+        this.row = row;
+        this.matrix = new float[this.row][this.column];
     }
 
-    public static Matriz getInstance(int column, int line){
-        if(column > 1 && line > 1)
-            return new Matriz(column, line);
+    public static Matriz getInstance(int column, int row){
+        if(column > 1 && row > 1)
+            return new Matriz(column, row);
         return null;
     }
 
+    // the class's methods
     public void receberMatriz(Scanner scanner){
-
         System.out.println("PREENCHENDO A MATRIZ...");
-        for (int i = 0; i < this.line; i++) {
+        for (int i = 0; i < this.row; i++) {
             for (int j = 0; j < this.column; j++) {
                 System.out.print("Elemento da linha " + (i+1) + " da coluna " + (j+1) + ": ");
                 this.matrix[i][j] = scanner.nextFloat();
@@ -31,9 +31,8 @@ public class Matriz {
     }
 
     private void imprimirMatriz(){
-
         System.out.println("");
-        for (int i = 0; i < this.line; i++) {
+        for (int i = 0; i < this.row; i++) {
             String linha = "";
             for (int j = 0; j < this.column; j++) 
                 linha += this.matrix[i][j] + "\t";
@@ -41,44 +40,54 @@ public class Matriz {
         }
     }
 
-    public int encontrarPivoNaColuna(int column){ // search on the column
-        int line = -1;
-        for (int i = 0; i < this.column; i++) {
-            if(this.matrix[i][column] == 1){ // column 0
-                line = i;
+    public void escalonarMatriz(int reference){ // reference row
+        int linhaPivo = this.encontrarPivo(reference); // thinking that all columns have a pivot
+        if(linhaPivo != -1) 
+            this.trocarLinhas(linhaPivo, reference);
+        else
+            this.forcarPivo(reference, reference);
+        linhaPivo = reference;
+        this.zerarLinhasAbaixo(linhaPivo, reference);
+        this.imprimirMatriz();
+    }
+
+    public int encontrarPivo(int reference){ 
+        int position = -1;
+        for (int i = reference; i < this.column; i++) {    
+            if(this.matrix[i][reference] == 1){ 
+                position = i;
                 break;
             }
         }
-        return line;
+        return position;
     }
 
-    public void trocarLinhas(int from, int to){ // from is the pivot's line. to's value is 0
+    public void trocarLinhas(int from, int to){ // 'from' is the pivot's row
         if(from == 0)
             return;
-        for (int j = 0; j < this.line; j++) {
+        for (int j = 0; j < this.row; j++) {
             float auxiliar = this.matrix[from][j];                
             this.matrix[from][j] = this.matrix[to][j];
             this.matrix[to][j] = auxiliar;
         }
     }
 
-    public void zerarLinhasAbaixo(int line, int column){ // reference line: this function works below it. reference column
-        if((line+1) == this.line) // when 'line' is the last line
-            return;
+    public void zerarLinhasAbaixo(int linhaPivo, int column){ // linhaPivo: this function works below it
+        if((linhaPivo+1) == this.row || (column+1) == this.column) 
+            return; // when 'linhaPivo' or 'column' is at the end of the matrix
 
-        int repeat = (this.matrix.length-1) - line;
+        int repeat = (this.matrix.length-1) - linhaPivo;
 
         for (int i = 1; i <= repeat; i++) {
-            float fator = this.matrix[line+i][column] / this.matrix[line][column];
+            float fator = this.matrix[linhaPivo+i][column] / this.matrix[linhaPivo][column];
             for (int j = 0; j < matrix.length; j++) 
-                this.matrix[line+i][j] -= (fator * this.matrix[line][j]);                
+                this.matrix[linhaPivo+i][j] -= (fator * this.matrix[linhaPivo][j]);                
         }
-        
-        this.imprimirMatriz();
     }
 
-    public void forcarPivo(int line, int column){ // references values
-        for (int j = 0; j < this.matrix.length; j++) 
-            this.matrix[line][j] /= this.matrix[line][column];
+    public void forcarPivo(int row, int column){ 
+        float divisor = this.matrix[row][column];
+        for (int j = column; j < this.column; j++) 
+            this.matrix[row][j] /= divisor;
     }
 }
