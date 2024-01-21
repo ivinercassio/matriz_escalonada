@@ -4,7 +4,6 @@ public class Matriz {
     private int column;
     private int row;
     private float[][] matrix;
-    // private float determinant;
 
     private Matriz(int column, int row){
         this.column = column;
@@ -46,13 +45,11 @@ public class Matriz {
         if(linhaPivo != -1) 
             this.trocarLinhas(linhaPivo, reference);
         else
-            this.forcarPivo(reference, reference); // buscar elementos não nulos para fazer a troca entre linhas ???
+            this.forcarPivo(reference, reference);
         linhaPivo = reference;
         this.zerarLinhasAbaixo(linhaPivo, reference);
         this.imprimirMatriz();
     }
-
-    public void reduzirMatrizPorLinhas(int reference){}
 
     private int encontrarPivo(int reference){ // reference column
         for (int i = reference; i < this.row; i++)
@@ -73,11 +70,16 @@ public class Matriz {
 
     private void forcarPivo(int row, int column) { // it means the position where the pivot is waited
         float divisor = this.matrix[row][column];
-        if (divisor == 0 && (column+1) < this.column) 
+        if (divisor == 0 && (column+1) < this.column) {
+            // O PROBLEMA ESTAH AQUI. A FUNCAO PULA PARA A PROXIMA COLUNA CORRETAMENTE,
+            // MAS NAO AVISA O RESTANTE DO CODIGO. FAZENDO APARECER DOIS PIVOS NA MESMA COLUNA
             forcarPivo(row, (column+1)); // search the pivot on the next column
-        else
-            for (int j = column; j < this.column; j++) 
-                this.matrix[row][j] /= divisor;
+        }
+        else if (divisor == 0) // caso o elemento seja nulo na ultima coluna
+                return;
+            else
+                for (int j = column; j < this.column; j++) 
+                    this.matrix[row][j] /= divisor;
     }
 
     private void zerarLinhasAbaixo(int linhaPivo, int column){ // linhaPivo: this function works below it
@@ -92,4 +94,35 @@ public class Matriz {
                 this.matrix[linhaPivo+i][j] -= (fator * this.matrix[linhaPivo][j]);                
         }
     }    
+
+    public void reduzirMatrizPorLinhas(){
+        int column = posicaoUltimoPivo(this.row-1);
+        if (column >= 0)
+            for (int i = column; i > 0; i--){
+                zerarLinhasAcima(i);
+                this.imprimirMatriz();
+            }
+    }
+
+    private int posicaoUltimoPivo(int linha){
+        for (int i = 0; i < this.column; i++)
+            if(matrix[linha][i] == 1)
+                return i;
+        return posicaoUltimoPivo(linha-1);
+    }
+
+    private void zerarLinhasAcima(int position){ // this is the pivot's position on the matrix's columns
+        int repeat = this.column-1 - position;
+
+        for (int i = 0; i < repeat; i++) {
+            float fator = this.matrix[position-1][position]; 
+            for (int j = 0; j < this.column; j++) 
+                this.matrix[position-1][j] -= (fator * this.matrix[position][j]);
+        }
+    }
 }
+
+/* 
+MATRIZ QUE CAUSA O ERRO NO "FORCAR PIVO"
+{{2,6,1},{1,3,6},{3,9,2}}
+ */
