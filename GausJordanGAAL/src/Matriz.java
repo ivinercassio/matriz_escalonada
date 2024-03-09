@@ -39,8 +39,6 @@ public class Matriz {
     }
 
     public void escalonarMatriz(int reference){ // reference row
-        // every time the funciton is started, it is need to check whether the column has been summed to 1
-        // if so, 'reference' must also be added to 1
         int linhaPivo = this.encontrarPivo(reference); 
         if(linhaPivo != -1) 
             this.trocarLinhas(linhaPivo, reference);
@@ -70,20 +68,32 @@ public class Matriz {
 
     private void forcarPivo(int row, int column) { // it means the position where the pivot is waited
         float divisor = this.matrix[row][column];
-        if (divisor == 0 && (column+1) < this.column) {
-            // O PROBLEMA ESTAH AQUI. A FUNCAO PULA PARA A PROXIMA COLUNA CORRETAMENTE,
-            // MAS NAO AVISA O RESTANTE DO CODIGO. FAZENDO APARECER DOIS PIVOS NA MESMA COLUNA
-            forcarPivo(row, (column+1)); // search the pivot on the next column
-        }
-        else if (divisor == 0) // caso o elemento seja nulo na ultima coluna
-                return;
-            else
-                for (int j = column; j < this.column; j++) 
-                    this.matrix[row][j] /= divisor;
+
+        // if divisor is zero
+        if (divisor == 0) {
+            int posicao = this.buscarElementoNaoNulo(column);
+            if (posicao != -1) {
+                this.trocarLinhas(posicao, row);
+                forcarPivo(row, column);
+
+            }else if ((column+1) < this.column) 
+                forcarPivo(row, (column+1)); // search the pivot on the next column
+        }else{
+            for (int j = column; j < this.column; j++)
+                this.matrix[row][j] /= divisor;
+            this.zerarLinhasAbaixo(row, column);
+        }           
+    }
+
+    private int buscarElementoNaoNulo(int column){
+        for (int i = column; i < this.row; i++)
+            if(this.matrix[i][column] != 0)
+                return i;
+        return -1;
     }
 
     private void zerarLinhasAbaixo(int linhaPivo, int column){ // linhaPivo: this function works below it
-        if((linhaPivo+1) == this.row || (column+1) == this.column) 
+        if((linhaPivo+1) == this.row) 
             return; // when is searching at the end of the matrix
 
         int repeat = (this.matrix.length-1) - linhaPivo;
@@ -96,33 +106,32 @@ public class Matriz {
     }    
 
     public void reduzirMatrizPorLinhas(){
-        int column = posicaoUltimoPivo(this.row-1);
-        if (column >= 0)
-            for (int i = column; i > 0; i--){
-                zerarLinhasAcima(i);
+        int[] position = posicaoUltimoPivo(this.row-1);
+        if (position[1] >= 1)
+            for (int i = position[1]; i > 0; i--){ // andando nas colunas da direita para esquerda
+                this.zerarLinhasAcima(position[0], i);
+                position[0]--;
                 this.imprimirMatriz();
             }
     }
 
-    private int posicaoUltimoPivo(int linha){
+    private int[] posicaoUltimoPivo(int linha){
         for (int i = 0; i < this.column; i++)
-            if(matrix[linha][i] == 1)
-                return i;
+            if(matrix[linha][i] == 1){
+                int[] position = {linha, i};
+                return position;
+            }
         return posicaoUltimoPivo(linha-1);
     }
 
-    private void zerarLinhasAcima(int position){ // this is the pivot's position on the matrix's columns
-        int repeat = this.column-1 - position;
-
-        for (int i = 0; i < repeat; i++) {
-            float fator = this.matrix[position-1][position]; 
+    private void zerarLinhasAcima(int linha, int coluna){ // this is the pivot's position on the matrix's columns
+        // coluna is equals count of reapetion
+        for (int i = 1; i <= coluna; i++) {      // 4x4
+            // for (int i = 2; i <= coluna; i++) {      // 3x3
+            float fator = this.matrix[coluna-i][coluna];
             for (int j = 0; j < this.column; j++) 
-                this.matrix[position-1][j] -= (fator * this.matrix[position][j]);
+                this.matrix[coluna-i][j] -= (fator * this.matrix[coluna][j]);    // 4x4                
+                // this.matrix[coluna-i][j] -= (fator * this.matrix[linha][j]);    // 3x3            
         }
     }
 }
-
-/* 
-MATRIZ QUE CAUSA O ERRO NO "FORCAR PIVO"
-{{2,6,1},{1,3,6},{3,9,2}}
- */
